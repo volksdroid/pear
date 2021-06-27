@@ -16,7 +16,7 @@ static GCond g_cond;
 static GMutex g_mutex;
 peer_connection_t *g_peer_connection = NULL;
 
-const char PIPE_LINE[] = "v4l2src ! videorate ! video/x-raw,width=640,height=480,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=6000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1400 ! appsink name=pear-sink";
+char PIPE_LINE[] = "v4l2src ! videorate ! video/x-raw,width=640,height=480,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=6000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1400 ! appsink name=pear-sink";
 
 static void on_iceconnectionstatechange(iceconnectionstate_t state, void *data) {
   if(state == FAILED) {
@@ -133,6 +133,9 @@ int main(int argc, char **argv) {
 
   gst_init(&argc, &argv);
 
+  char *pl = getenv("PIPE_LINE");
+  if (!pl) pl = PIPE_LINE;
+  printf("Using PIPE_LINE: %s\n", pl);
   gst_element = gst_parse_launch(PIPE_LINE, NULL);
   pear_sink = gst_bin_get_by_name(GST_BIN(gst_element), "pear-sink");
   g_signal_connect(pear_sink, "new-sample", G_CALLBACK(new_sample), NULL);
