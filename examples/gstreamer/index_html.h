@@ -11,11 +11,12 @@ const char index_html[] = " \
     <title>GStreamer</title> \n \
   </head> \n \
   <body> \n \
-    <video style='display:block; margin: 0 auto;' id='remoteVideos'></video> \n \
+    <video style='width:1280px; display:block; margin: 0 auto;' id='remoteVideos'></video> \n \
     <script> \n \
       function jsonRpc(payload, cb) { \n \
         var xhttp = new XMLHttpRequest(); \n \
         xhttp.onreadystatechange = function() { \n \
+	  console.log(`RPS response`); \n\
           if (this.readyState == 4 && this.status == 200) { \n \
             cb(this.responseText); \n \
           } \n \
@@ -32,6 +33,7 @@ const char index_html[] = " \
       }; \n \
  \n \
       pc.ontrack = function (event) { \n \
+        console.log(`ontrack: Playing`); \n\
         var el = document.getElementById('remoteVideos'); \n \
         el.srcObject = event.streams[0]; \n \
         el.autoplay = true; \n \
@@ -56,7 +58,7 @@ const char index_html[] = " \
           var lines = pc.localDescription.sdp.split('\\n'); \n \
           for(let i = 0; i < lines.length; i++) { \n \
             // remove candidate which libnice cannot parse. \n \
-            if(lines[i].search('candidate') != -1 && lines[i].search('local') != -1) { \n \
+            if (lines[i].search('candidate') != -1 && lines[i].search('local') != -1) { \n \
               lines.splice(i, 1); \n \
               i--; \n \
             } \n \
