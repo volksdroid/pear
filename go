@@ -1,7 +1,13 @@
 #!/bin/bash
+# set -e
+
 git submodule update --init --recursive
 ./build-third-party.sh
-mkdir cmake
+(cd examples/gstreamer
+ (cat index_html.h.template;sed -e 's/$/ \\n\\/' -e 's/"/\\"/g' <index.html
+  echo '";'; echo \#endif // GSTREAMER_INDEX_HTML_H_) >index_html.h
+ )
+if [ ! -d cmake ]; then mkdir cmake; fi
 (cd cmake
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 cd examples

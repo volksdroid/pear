@@ -1,0 +1,7 @@
+#ifndef GSTREAMER_INDEX_HTML_H_
+#define GSTREAMER_INDEX_HTML_H_
+ 
+#include <stdio.h>
+#include <stdlib.h>
+
+const char index_html[] = "\

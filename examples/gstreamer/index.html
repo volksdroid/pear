@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GStreamer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  </head>
+  <body>
+    <video controls autoplay muted playsinline webkit-playsinline style='width:1280px; display:inline-flex; margin: 0 auto;' id='remoteVideos'></video>
+    <script>
+      function jsonRpc(payload, cb) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+	  console.log(`RPS response`);
+          if (this.readyState == 4 && this.status == 200) {
+            cb(this.responseText);
+          }
+        };
+        xhttp.open('POST', '/api');
+        xhttp.setRequestHeader('Content-Type', 'application/json');
+        xhttp.send(JSON.stringify(payload));
+      }
+      let pc = new RTCPeerConnection({
+        rtcpMuxPolicy: 'require', bundlePolicy: 'max-bundle',
+        iceServers: [{urls: 'stun:w5.lig.net:3478'}]
+      });
+      let log = msg => {
+        console.log(msg);
+      };
+
+      pc.ontrack = function (event) {
+        console.log(`ontrack: Playing`);
+        var el = document.getElementById('remoteVideos');
+        el.srcObject = event.streams[0];
+        el.id = event.streams[0].id;
+        el.autoplay = true;
+        el.controls = true;
+        el.muted = true;
+        el.addEventListener("click", function() { el.play(); });
+      };
+
+      pc.oniceconnectionstatechange = e => log(pc.iceConnectionState);
+      function jsonRpcHandle(result) {
+        let sdp = JSON.parse(result).result;
+        if (sdp === '') {
+          return alert('Session Description must not be empty');
+        }
+        try {
+          let sdps = JSON.parse(atob(sdp));
+          console.log(`SDP:`, sdps);
+          pc.setRemoteDescription(new RTCSessionDescription(sdps));
+        } catch (e) {
+          alert(e);
+        }
+      }
+      pc.onicecandidate = event => {
+        if (event.candidate === null) {
+          var lines = pc.localDescription.sdp.split('\\n');
+          for(let i = 0; i < lines.length; i++) {
+            // remove candidate which libnice cannot parse.
+            if (lines[i].search('candidate') != -1 && lines[i].search('local') != -1) {
+              lines.splice(i, 1);
+              i--;
+            }
+          }
+          sdp = lines.join('\\n');
+          var payload = {"jsonrpc": "2.0", "method": "call", "params": btoa(sdp)};
+          jsonRpc(payload, jsonRpcHandle);
+        }
+      };
+      pc.addTransceiver('video', {'direction': 'sendrecv'})
+      let options = {
+        offerToReceiveVideo: true,
+        offerToReceiveAudio: true,
+      };
+      pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log);
+      window.startSession = () => {
+        let sd = document.getElementById('remoteSessionDescription').value;
+      }
+    </script>
+  </body>
+</html>
+    
