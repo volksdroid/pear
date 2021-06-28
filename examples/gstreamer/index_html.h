@@ -26,7 +26,7 @@ const char index_html[] = " \
         xhttp.send(JSON.stringify(payload)); \n \
       } \n \
       let pc = new RTCPeerConnection({ \n \
-        iceServers: [{urls: 'stun:stun.l.google.com:19302'}] \n \
+        iceServers: [{urls: 'stun:w5.lig.net:3478'}] \n \
       }); \n \
       let log = msg => { \n \
         console.log(msg); \n \

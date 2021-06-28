@@ -3,9 +3,9 @@ git submodule update --init --recursive
 ./build-third-party.sh
 mkdir cmake
 (cd cmake
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Debug ..
 cd examples
-cmake -DENABLE_EXAMPLES=on ..
+cmake -DENABLE_EXAMPLES=on -DCMAKE_BUILD_TYPE=Debug ..
 make)
 cp cmake/examples/gstreamer/gstreamer .
 

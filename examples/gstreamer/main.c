@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
   g_signal_connect(pear_sink, "new-sample", G_CALLBACK(new_sample), NULL);
   g_object_set(pear_sink, "emit-signals", TRUE, NULL);
 
-  if(signal_service_create(&signal_service, options)) {
+  if (signal_service_create(&signal_service, options)) {
     exit(1);
   }
   signal_service_on_offer_get(&signal_service, &on_offer_get_cb, NULL);
