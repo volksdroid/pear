@@ -11,8 +11,10 @@ const char index_html[] = "\
     <title>GStreamer</title> \n\
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\"> \n\
   </head> \n\
-  <body> \n\
-    <video controls autoplay muted playsinline webkit-playsinline style='width:1280px; display:inline-flex; margin: 0 auto;' id='remoteVideos'></video> \n\
+  <body style=\"width:100%\"> \n\
+    <video controls autoplay muted playsinline webkit-playsinline \n\
+	   style='height:100vh; display:block; margin: 0 auto;' \n\
+	   id='remoteVideos'></video> \n\
     <script> \n\
       function jsonRpc(payload, cb) { \n\
         var xhttp = new XMLHttpRequest(); \n\

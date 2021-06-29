@@ -29,7 +29,7 @@ static void on_icecandidate(char *sdp, void *data) {
 
   if(g_sdp)
     g_free(g_sdp);
-
+  printf("sdp: %s\n", sdp);
   g_sdp = g_base64_encode((const char *)sdp, strlen(sdp));
   g_cond_signal(&g_cond);
 }
@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
   char *pl = getenv("PIPE_LINE");
   if (!pl) pl = PIPE_LINE;
   printf("Using PIPE_LINE: %s\n", pl);
-  gst_element = gst_parse_launch(PIPE_LINE, NULL);
+  gst_element = gst_parse_launch(pl, NULL);
   pear_sink = gst_bin_get_by_name(GST_BIN(gst_element), "pear-sink");
   g_signal_connect(pear_sink, "new-sample", G_CALLBACK(new_sample), NULL);
   g_object_set(pear_sink, "emit-signals", TRUE, NULL);

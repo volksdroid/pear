@@ -46,6 +46,15 @@ void peer_connection_add_stream(peer_connection_t *peer_connection, const char *
   else if(strcmp(codec_name, "OPUS") == 0) {
     ice_agent_add_stream(&peer_connection->ice_agent, CODEC_OPUS);
   }
+  else if(strcmp(codec_name, "AV1") == 0) {
+    ice_agent_add_stream(&peer_connection->ice_agent, CODEC_AV1);
+  }
+  else if(strcmp(codec_name, "AV1X") == 0) {
+    ice_agent_add_stream(&peer_connection->ice_agent, CODEC_AV1);
+  }
+  else if(strcmp(codec_name, "VP9") == 0) {
+    ice_agent_add_stream(&peer_connection->ice_agent, CODEC_VP9);
+  }
 
 }
 

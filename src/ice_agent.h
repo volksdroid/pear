@@ -16,6 +16,8 @@ typedef enum iceconnectionstate_t {
 
 typedef enum codec_t {
   CODEC_H264,
+  CODEC_AV1,
+  CODEC_VP9,
   CODEC_OPUS,
   CODEC_NONE,
 } codec_t;

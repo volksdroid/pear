@@ -4,8 +4,10 @@
     <title>GStreamer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   </head>
-  <body>
-    <video controls autoplay muted playsinline webkit-playsinline style='width:1280px; display:inline-flex; margin: 0 auto;' id='remoteVideos'></video>
+  <body style="width:100%">
+    <video controls autoplay muted playsinline webkit-playsinline
+	   style='height:100vh; display:block; margin: 0 auto;'
+	   id='remoteVideos'></video>
     <script>
       function jsonRpc(payload, cb) {
         var xhttp = new XMLHttpRequest();
