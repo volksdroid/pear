@@ -14,7 +14,7 @@ const char index_html[] = "\
   <body style=\"width:100%\"> \n\
     <video controls autoplay muted playsinline webkit-playsinline \n\
 	   style='height:100vh; display:block; margin: 0 auto;' \n\
-	   id='remoteVideos'></video> \n\
+	   id='video'></video> \n\
     <script> \n\
       function jsonRpc(payload, cb) { \n\
         var xhttp = new XMLHttpRequest(); \n\
@@ -38,7 +38,7 @@ const char index_html[] = "\
  \n\
       pc.ontrack = function (event) { \n\
         console.log(`ontrack: Playing`); \n\
-        var el = document.getElementById('remoteVideos'); \n\
+        var el = document.getElementById('video'); \n\
         el.srcObject = event.streams[0]; \n\
         el.id = event.streams[0].id; \n\
         el.autoplay = true; \n\
@@ -71,7 +71,7 @@ const char index_html[] = "\
               i--; \n\
             } \n\
           } \n\
-          sdp = lines.join('\\n'); \n\
+          let sdp = lines.join('\\n'); \n\
           var payload = {\"jsonrpc\": \"2.0\", \"method\": \"call\", \"params\": btoa(sdp)}; \n\
           jsonRpc(payload, jsonRpcHandle); \n\
         } \n\

@@ -7,7 +7,7 @@
   <body style="width:100%">
     <video controls autoplay muted playsinline webkit-playsinline
 	   style='height:100vh; display:block; margin: 0 auto;'
-	   id='remoteVideos'></video>
+	   id='video'></video>
     <script>
       function jsonRpc(payload, cb) {
         var xhttp = new XMLHttpRequest();
@@ -31,7 +31,7 @@
 
       pc.ontrack = function (event) {
         console.log(`ontrack: Playing`);
-        var el = document.getElementById('remoteVideos');
+        var el = document.getElementById('video');
         el.srcObject = event.streams[0];
         el.id = event.streams[0].id;
         el.autoplay = true;
@@ -64,7 +64,7 @@
               i--;
             }
           }
-          sdp = lines.join('\\n');
+          let sdp = lines.join('\\n');
           var payload = {"jsonrpc": "2.0", "method": "call", "params": btoa(sdp)};
           jsonRpc(payload, jsonRpcHandle);
         }
