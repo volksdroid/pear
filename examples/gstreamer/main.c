@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include <gst/gst.h>
+#include <gst/app/gstappsink.h>
 
 #include "signal_service.h"
 #include "utils.h"
@@ -16,12 +17,12 @@ static GCond g_cond;
 static GMutex g_mutex;
 peer_connection_t *g_peer_connection = NULL;
 
-char PIPE_LINE[] = "v4l2src ! videorate ! video/x-raw,width=640,height=480,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=6000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1400 ! appsink name=pear-sink";
+char PIPE_LINE[] = "v4l2src ! videorate ! video/x-raw,width=640,height=480,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=9000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=100 seqnum-offset=0 timestamp-offset=0 mtu=1500 ! appsink name=pear-sink";
 
 static void on_iceconnectionstatechange(iceconnectionstate_t state, void *data) {
   if(state == FAILED) {
     LOG_INFO("Disconnect with browser... Stop streaming");
-    gst_element_set_state(gst_element, GST_STATE_PAUSED);
+    gst_element_set_state(GST_ELEMENT(gst_element), GST_STATE_PAUSED);
   }
 }
 
@@ -36,18 +37,18 @@ static void on_icecandidate(char *sdp, void *data) {
 
 static void on_transport_ready(void *data) {
 
-  gst_element_set_state(gst_element, GST_STATE_PLAYING);
+  gst_element_set_state(GST_ELEMENT(gst_element), GST_STATE_PLAYING);
 }
 
 char* on_offer_get_cb(char *offer, void *data) {
 
-  gst_element_set_state(gst_element, GST_STATE_PAUSED);
+  gst_element_set_state(GST_ELEMENT(gst_element), GST_STATE_PAUSED);
 
   g_mutex_lock(&g_mutex);
   peer_connection_destroy(g_peer_connection);
   g_peer_connection = peer_connection_create();
   peer_connection_add_stream(g_peer_connection, "H264");
-  peer_connection_set_on_icecandidate(g_peer_connection, on_icecandidate, NULL);
+  peer_connection_set_on_icecandidate(g_peer_connection, &on_icecandidate, NULL);
   peer_connection_set_on_transport_ready(g_peer_connection, &on_transport_ready, NULL);
   peer_connection_set_on_iceconnectionstatechange(g_peer_connection, &on_iceconnectionstatechange, NULL);
   peer_connection_create_answer(g_peer_connection);
@@ -61,7 +62,7 @@ char* on_offer_get_cb(char *offer, void *data) {
 
 static GstFlowReturn new_sample(GstElement *sink, void *data) {
 
-  static uint8_t rtp_packet[MTU] = {0};
+  static uint8_t rtp_packet[MTU+100] = {0};
   int bytes;
 
   GstSample *sample;
@@ -147,8 +148,8 @@ int main(int argc, char **argv) {
   signal_service_on_offer_get(&signal_service, &on_offer_get_cb, NULL);
   signal_service_dispatch(&signal_service);
 
-  gst_element_set_state(gst_element, GST_STATE_NULL);
-  gst_object_unref(gst_element);
+  gst_element_set_state(GST_ELEMENT(gst_element), GST_STATE_NULL);
+  gst_object_unref(GST_ELEMENT(gst_element));
 
   return 0;
 }

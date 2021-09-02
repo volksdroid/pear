@@ -23,13 +23,17 @@ void* ice_agent_gather_thread(void *data) {
   return NULL;
 }
 
+int maxErr = 10;
+int errCnt = 0;
+
 int ice_agent_send_rtp_packet(ice_agent_t *ice_agent, uint8_t *packet, int *bytes) {
 
     dtls_transport_encrypt_rtp_packet(ice_agent->dtls_transport, packet, bytes);
     int sent = nice_agent_send(ice_agent->nice_agent, ice_agent->stream_id,
      ice_agent->component_id, *bytes, (gchar*)packet);
-    if(sent < *bytes) {
+    if(sent < *bytes && errCnt < maxErr) {
       LOG_ERROR("only sent %d bytes? (was %d)\n", sent, *bytes);
+      ++errCnt;
     }
     return sent;
 }
@@ -163,12 +167,12 @@ static void* cb_candidate_gathering_done(NiceAgent *agent, guint stream_id,
 
 }
 
-static void* cb_component_state_chanaged(NiceAgent *agent,
+static void* cb_component_state_changed(NiceAgent *agent,
  guint stream_id, guint component_id, guint state, gpointer data) {
 
   ice_agent_t *ice_agent = (ice_agent_t*)data;
 
-  //LOG_INFO("SIGNAL: state changed %d %d %s[%d]",
+  // printf("SIGNAL: state changed %d %d %s[%d]\n",data);
   // stream_id, component_id, STATE_NAME[state], state);
   if(ice_agent->on_iceconnectionstatechange != NULL) {
     ice_agent->on_iceconnectionstatechange(state, ice_agent->on_iceconnectionstatechange_data);
@@ -209,7 +213,7 @@ int ice_agent_init(ice_agent_t *ice_agent, dtls_transport_t *dtls_transport) {
   g_object_set(ice_agent->nice_agent, "keepalive-conncheck", TRUE, NULL);
 
   g_signal_connect(ice_agent->nice_agent, "candidate-gathering-done", G_CALLBACK(cb_candidate_gathering_done), ice_agent);
-  g_signal_connect(ice_agent->nice_agent, "component-state-changed", G_CALLBACK(cb_component_state_chanaged), ice_agent);
+  g_signal_connect(ice_agent->nice_agent, "component-state-changed", G_CALLBACK(cb_component_state_changed), ice_agent);
   g_signal_connect(ice_agent->nice_agent, "new-selected-pair-full", G_CALLBACK(cb_new_selected_pair_full), ice_agent);
 
   ice_agent->component_id = 1;
@@ -249,6 +253,7 @@ void ice_agent_set_remote_sdp(ice_agent_t *ice_agent, char *remote_sdp_base64) {
   GSList *plist;
 
   remote_sdp = g_base64_decode(remote_sdp_base64, &len);
+  printf("Remote SDP: %s\n", remote_sdp_base64);
 
   plist = nice_agent_parse_remote_stream_sdp(ice_agent->nice_agent,
    ice_agent->component_id, (gchar*)remote_sdp, &ufrag, &pwd);

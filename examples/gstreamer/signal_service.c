@@ -41,12 +41,13 @@ static void api_request_cb(struct evhttp_request *req, void *arg) {
   buf = evhttp_request_get_input_buffer(req);
 
   len = evbuffer_get_length(buf);
-  payload = (char*)malloc(len);
+  payload = (char*)malloc(len+1);
   if(payload == NULL) {
     evhttp_send_error(req, HTTP_INTERNAL, 0);
     return;
   }
 
+  payload[len] = 0;
   evbuffer_remove(buf, payload, len);
 
   json = cJSON_Parse(payload);

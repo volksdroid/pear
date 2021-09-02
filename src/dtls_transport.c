@@ -163,6 +163,8 @@ int dtls_transport_init(dtls_transport_t *dtls_transport, BIO *agent_write_bio) 
   *(lfp-1) = 0;
 
   dtls_transport->ssl = SSL_new(dtls_transport->ssl_ctx);
+  //  SSL_set_connect_state(dtls_transport->ssl);
+  SSL_set_accept_state(dtls_transport->ssl);
 
   dtls_transport->read_bio = BIO_new(BIO_s_mem());
   dtls_transport->write_bio = agent_write_bio;
