@@ -200,6 +200,7 @@ int ice_agent_init(ice_agent_t *ice_agent, dtls_transport_t *dtls_transport) {
 
   ice_agent->nice_agent = nice_agent_new(g_main_loop_get_context(ice_agent->gloop),
    NICE_COMPATIBILITY_RFC5245);
+  // g_object_set(ice_agent->nice_agent, "idle-timeout", 60000, NULL);
 
   if(ice_agent->nice_agent == NULL) {
     LOG_ERROR("Failed to create agent");
@@ -210,7 +211,8 @@ int ice_agent_init(ice_agent_t *ice_agent, dtls_transport_t *dtls_transport) {
   g_object_set(ice_agent->nice_agent, "stun-server-port", STUN_PORT, NULL);
   g_object_set(ice_agent->nice_agent, "controlling-mode",
    ice_agent->controlling, NULL);
-  g_object_set(ice_agent->nice_agent, "keepalive-conncheck", TRUE, NULL);
+  // This now causes a disconnect after 50-90 seconds while video is streaming.
+  // g_object_set(ice_agent->nice_agent, "keepalive-conncheck", TRUE, NULL);
 
   g_signal_connect(ice_agent->nice_agent, "candidate-gathering-done", G_CALLBACK(cb_candidate_gathering_done), ice_agent);
   g_signal_connect(ice_agent->nice_agent, "component-state-changed", G_CALLBACK(cb_component_state_changed), ice_agent);

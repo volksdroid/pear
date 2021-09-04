@@ -40,6 +40,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           <hr/>
           Autoplay when VR starts: <input id='autoplayVideo' type='checkbox' checked/>
         </p>
+          <p>
+            <input id='vertFOV' value='90' min='30' max='150' step='10' type='range'/><br/>
+            <label id='vertFOVLabel' for="vertFOV">Vertical FOV: </label>
+          </p>
       </summary>
     </header>
     <script type="module">
@@ -61,6 +65,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // let polyfill = new WebXRPolyfill();
       // }
 
+      let inlineSession = null;
+      let fov = document.getElementById('vertFOV');
+      let fovLabel = document.getElementById('vertFOVLabel');
+      function updateFov() {
+        let value = parseFloat(fov.value);
+        // The inlineVerticalFieldOfView is specified in radians.
+        let radValue = value * (Math.PI / 180);
+
+        if (inlineSession) {
+          // As with any values set with updateRenderState, this will take
+          // effect on the next frame.
+          inlineSession.updateRenderState({
+            inlineVerticalFieldOfView: radValue
+          });
+        }
+        
+        // Set the label on the page
+        let label = `Vertical FOV: ${value} degrees`;
+        if (value == 90) {
+          label += ' (default)';
+        }
+        fovLabel.textContent = label;
+      }
+      fov.addEventListener('change', updateFov);
+
+
       let autoplayCheckbox = document.getElementById('autoplayVideo');
 
       // XR globals.
@@ -77,14 +107,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       let video = document.createElement('video');
       video.loop = true;
-      video.id = 'video';
+      // video.id = 'video';
       video.src = 'cdshort.mp4';
       // video.src = 'media/video/bbb-sunflower-540p2-1min.webm';
-      initVideo(video);
 
       let videoNode = new VideoNode({
         video: video,
-        displayMode: 'stereoTopBottom'
+        displayMode: 'stereoTopBottom' // 'mono', 'stereoTopBottom', 'stereoLeftRight'
       });
 
       // When the video is clicked we'll pause it if it's playing.
@@ -94,7 +123,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           video.pause();
         } else {
           playButton.visible = false;
-          video.play();
+      video.play().then(() => {
+            console.log(`Video play actually started.`);
+      });;
         }
       });
       videoNode.selectable = true;
@@ -106,6 +137,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       videoNode.translation = [0, 0.7, -1.5];
       videoNode.scale = [1, 1, 1.0];
       scene.addNode(videoNode);
+      initVideo(video);
 
       video.addEventListener('loadeddata', () => {
         // Once the video has loaded up adjust the aspect ratio of the "screen"
@@ -128,7 +160,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Play the video and hide the button.
         if (video.paused) {
           playButton.visible = false;
-          video.play();
+        video.play().then(() => {
+	console.log(`Video play actually started.`);
+	});
         }
       });
       // Move the play button to the center of the screen and make it much
@@ -151,7 +185,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             xrButton.enabled = supported;
           });
 
-          navigator.xr.requestSession('inline').then(onSessionStarted);
+          navigator.xr.requestSession('inline').then((session) => {
+            inlineSession = session;
+            onSessionStarted(session);
+            updateFov();
+          });
         }
       }
 
@@ -190,6 +228,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // pause it, at which point we can resume it pretty much whenever we'd
           // like.
           pending = video.play().then(() => {
+            console.log(`Video play actually started.`);
             video.pause();
           });
         }
@@ -203,7 +242,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           if (autoplay) {
             pending.then(() => {
-              video.play();
+        video.play().then(() => {
+            console.log(`Video play actually started.`);
+	});
             });
           }
         });
@@ -299,11 +340,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Start the XR application.
       initXR();
 
-	function initVideo(videoElement) {
+    function initVideo(videoElement) {
       function jsonRpc(payload, cb) {
+	console.log(`jsonRpc called:`, payload);
         var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-	  console.log(`RPS response`);
+        xhttp.onreadystatechange = function(data) {
+	  console.log(`RPS response`, data);
           if (this.readyState == 4 && this.status == 200) {
             cb(this.responseText);
           }
@@ -314,7 +356,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       let pc = new RTCPeerConnection({
         rtcpMuxPolicy: 'require', bundlePolicy: 'max-bundle',
-        iceServers: [{urls: 'stun:w5.lig.net:3478'}]
+        iceServers: [{urls: 'stun:w5.lig.net:3478'}],
+        iceServersHide: [{urls: 'stun:w5.lig.net:3478'}, {urls: 'stun:lig.net:3478'}, {urls: 'turn:w5.lig.net:3478', username: 'forged', credential: 'droids'}, {urls: 'turn:lig.net:3478', username: 'forged', credential: 'droids'}]
       });
       let log = msg => {
         console.log(msg);
@@ -322,15 +365,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       pc.ontrack = function (event) {
         console.log(`ontrack: Playing`);
+        // var el = document.getElementById('video');
         var el = videoElement; // document.getElementById('video');
-	el.src = null;
         el.srcObject = event.streams[0];
-        // el.id = event.streams[0].id;
-        // el.autoplay = true;
-        // el.controls = true;
-        // el.muted = true;
+        el.id = event.streams[0].id;
+	// el.id = 'video';
+        el.autoplay = true;
+        el.controls = true;
+        el.muted = true;
 	el.playsinline = true;
-	el.onloadedmetadata = () => { el.play()	};
+	el.webkitPlaysinline = true;
+        el.addEventListener("click", function() {
+	el.muted = !el.muted;
+	// el.play();
+	});
+	el.onloadedmetadata = () => { el.play().then(() => {
+            console.log(`Video play actually started.`);
+	});
+	};
 	// el.webkitPlaysinline = true;
         // el.addEventListener("click", function() { el.play(); });
       };
@@ -351,7 +403,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       pc.onicecandidate = event => {
         if (event.candidate === null) {
-          var lines = pc.localDescription.sdp.split('\\n');
+	console.log(event);
+          var lines = pc.localDescription.sdp.split('\n');
           for(let i = 0; i < lines.length; i++) {
             // remove candidate which libnice cannot parse.
             if (lines[i].search('candidate') != -1 && lines[i].search('local') != -1) {
@@ -359,7 +412,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               i--;
             }
           }
-          let sdp = lines.join('\\n');
+          let sdp = lines.join('\n');
+	  console.log(`Sending SDP: ${sdp}`);
           var payload = {"jsonrpc": "2.0", "method": "call", "params": btoa(sdp)};
           jsonRpc(payload, jsonRpcHandle);
         }
@@ -369,11 +423,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         offerToReceiveVideo: true,
         offerToReceiveAudio: true,
       };
-      pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log);
+      pc.createOffer().then(d => {
+        console.log(`createOffser:`, d);
+        pc.setLocalDescription(d);
+      }).catch(log);
       window.startSession = () => {
         let sd = document.getElementById('remoteSessionDescription').value;
       }
-	  };
+    };
     </script>
   </body>
 </html>

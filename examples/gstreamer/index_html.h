@@ -63,7 +63,7 @@ const char index_html[] = "\
       } \n\
       pc.onicecandidate = event => { \n\
         if (event.candidate === null) { \n\
-          var lines = pc.localDescription.sdp.split('\\n'); \n\
+          var lines = pc.localDescription.sdp.split('\n'); \n\
           for(let i = 0; i < lines.length; i++) { \n\
             // remove candidate which libnice cannot parse. \n\
             if (lines[i].search('candidate') != -1 && lines[i].search('local') != -1) { \n\
@@ -71,7 +71,7 @@ const char index_html[] = "\
               i--; \n\
             } \n\
           } \n\
-          let sdp = lines.join('\\n'); \n\
+          let sdp = lines.join('\n'); \n\
           var payload = {\"jsonrpc\": \"2.0\", \"method\": \"call\", \"params\": btoa(sdp)}; \n\
           jsonRpc(payload, jsonRpcHandle); \n\
         } \n\
@@ -83,7 +83,7 @@ const char index_html[] = "\
       }; \n\
 	pc.createOffer().then(d => { \n\
 	  console.log(d); \n\
-	  // pc.setLocalDescription(d); \n\
+	  pc.setLocalDescription(d); \n\
 	}).catch(log); \n\
       window.startSession = () => { \n\
         // let sd = document.getElementById('remoteSessionDescription').value; \n\

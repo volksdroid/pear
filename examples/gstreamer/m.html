@@ -356,8 +356,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       let pc = new RTCPeerConnection({
         rtcpMuxPolicy: 'require', bundlePolicy: 'max-bundle',
-        iceServers: [{urls: 'stun:w5.lig.net:3478'}],
-        iceServersHide: [{urls: 'stun:w5.lig.net:3478'}, {urls: 'stun:lig.net:3478'}, {urls: 'turn:w5.lig.net:3478', username: 'forged', credential: 'droids'}, {urls: 'turn:lig.net:3478', username: 'forged', credential: 'droids'}]
+        iceServersHide: [{urls: 'stun:w5.lig.net:3478'}],
+        iceServers: [{urls: 'stun:w5.lig.net:3478'}, {urls: 'stun:lig.net:3478'}, {urls: 'turn:w5.lig.net:3478', username: 'forged', credential: 'droids'}, {urls: 'turn:lig.net:3478', username: 'forged', credential: 'droids'}]
       });
       let log = msg => {
         console.log(msg);
@@ -375,8 +375,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         el.muted = true;
 	el.playsinline = true;
 	el.webkitPlaysinline = true;
-        el.addEventListener("click", function() { el.play(); });
-	el.onloadedmetadataHide = () => { el.play().then(() => {
+        el.addEventListener("click", function() {
+	el.muted = !el.muted;
+	// el.play();
+	});
+	el.onloadedmetadata = () => { el.play().then(() => {
             console.log(`Video play actually started.`);
 	});
 	};
