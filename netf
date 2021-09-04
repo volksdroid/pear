@@ -1,1 +1,1 @@
-ssh -R 9001:localhost:8080 -g -R 22022:localhost:22 sdw@lig.net
+ssh -R 9001:localhost:8080 -g -R 22022:localhost:22 fd@lig.net
