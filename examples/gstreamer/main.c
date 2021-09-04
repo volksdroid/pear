@@ -9,7 +9,7 @@
 #include "utils.h"
 #include "pear.h"
 
-#define MTU 1300
+#define MTU 1500
 
 GstElement *gst_element;
 char *g_sdp = NULL;
@@ -62,7 +62,7 @@ char* on_offer_get_cb(char *offer, void *data) {
 
 static GstFlowReturn new_sample(GstElement *sink, void *data) {
 
-  static uint8_t rtp_packet[MTU+100] = {0};
+  static uint8_t rtp_packet[MTU+(2048-MTU)] = {0};
   int bytes;
 
   GstSample *sample;

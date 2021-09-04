@@ -10,7 +10,7 @@
 
 env \
     GST_DEBUG=*:3 \
-    PIPE_LINE='v4l2src ! videorate ! video/x-raw,width=1280,height=720,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=9000 speed-preset=ultrafast tune=zerolatency key-int-max=30 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1300 ! appsink name=pear-sink' \
+    PIPE_LINE='v4l2src ! videorate ! video/x-raw,width=1280,height=720,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=9000 speed-preset=ultrafast tune=zerolatency key-int-max=30 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1500 ! appsink name=pear-sink' \
     ./gstreamer
 
 exit 0
