@@ -11,8 +11,8 @@
     <script>
       function jsonRpc(payload, cb) {
         var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-	  console.log(`RPS response`);
+        xhttp.onreadystatechange = function(data) {
+	  console.log(`RPS response`, data);
           if (this.readyState == 4 && this.status == 200) {
             cb(this.responseText);
           }
@@ -56,7 +56,7 @@
       }
       pc.onicecandidate = event => {
         if (event.candidate === null) {
-          var lines = pc.localDescription.sdp.split('\\n');
+          var lines = pc.localDescription.sdp.split('\n');
           for(let i = 0; i < lines.length; i++) {
             // remove candidate which libnice cannot parse.
             if (lines[i].search('candidate') != -1 && lines[i].search('local') != -1) {
@@ -64,7 +64,7 @@
               i--;
             }
           }
-          let sdp = lines.join('\\n');
+          let sdp = lines.join('\n');
           var payload = {"jsonrpc": "2.0", "method": "call", "params": btoa(sdp)};
           jsonRpc(payload, jsonRpcHandle);
         }
@@ -74,9 +74,12 @@
         offerToReceiveVideo: true,
         offerToReceiveAudio: true,
       };
-      pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log);
+	pc.createOffer().then(d => {
+	  console.log(d);
+	  pc.setLocalDescription(d);
+	}).catch(log);
       window.startSession = () => {
-        let sd = document.getElementById('remoteSessionDescription').value;
+        // let sd = document.getElementById('remoteSessionDescription').value;
       }
     </script>
   </body>

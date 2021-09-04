@@ -18,8 +18,8 @@ const char index_html[] = "\
     <script> \n\
       function jsonRpc(payload, cb) { \n\
         var xhttp = new XMLHttpRequest(); \n\
-        xhttp.onreadystatechange = function() { \n\
-	  console.log(`RPS response`); \n\
+        xhttp.onreadystatechange = function(data) { \n\
+	  console.log(`RPS response`, data); \n\
           if (this.readyState == 4 && this.status == 200) { \n\
             cb(this.responseText); \n\
           } \n\
@@ -81,9 +81,12 @@ const char index_html[] = "\
         offerToReceiveVideo: true, \n\
         offerToReceiveAudio: true, \n\
       }; \n\
-      pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log); \n\
+	pc.createOffer().then(d => { \n\
+	  console.log(d); \n\
+	  // pc.setLocalDescription(d); \n\
+	}).catch(log); \n\
       window.startSession = () => { \n\
-        let sd = document.getElementById('remoteSessionDescription').value; \n\
+        // let sd = document.getElementById('remoteSessionDescription').value; \n\
       } \n\
     </script> \n\
   </body> \n\

@@ -198,7 +198,7 @@ int signal_service_create(signal_service_t *signal_service, options_t options) {
   }
 
   evhttp_set_cb(signal_service->http, "/api", api_request_cb, signal_service);
-  evhttp_set_cb(signal_service->http, "/", index_request_cb, signal_service);
+  // evhttp_set_cb(signal_service->http, "/", index_request_cb, signal_service);
   evhttp_set_gencb(signal_service->http, path_request_cb, signal_service);
 
   signal_service->handle = evhttp_bind_socket_with_handle(signal_service->http,

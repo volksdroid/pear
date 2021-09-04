@@ -9,7 +9,7 @@
 #include "utils.h"
 #include "pear.h"
 
-#define MTU 1400
+#define MTU 1300
 
 GstElement *gst_element;
 char *g_sdp = NULL;

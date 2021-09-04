@@ -794,7 +794,7 @@ export class Renderer {
 
     let key = texture.textureKey;
     if (!key) {
-      throw new Error('Texure does not have a valid key');
+      throw new Error('Texture does not have a valid key');
     }
 
     if (key in this._textureCache) {

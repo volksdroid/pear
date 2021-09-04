@@ -257,6 +257,7 @@ void ice_agent_set_remote_sdp(ice_agent_t *ice_agent, char *remote_sdp_base64) {
 
   plist = nice_agent_parse_remote_stream_sdp(ice_agent->nice_agent,
    ice_agent->component_id, (gchar*)remote_sdp, &ufrag, &pwd);
+  printf("Parsed Remote SDP\n");
 
   if(ufrag && pwd && g_slist_length(plist) > 0) {
     ufrag[strlen(ufrag) - 1] = '\0';

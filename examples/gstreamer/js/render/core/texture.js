@@ -170,7 +170,7 @@ export class VideoTexture extends Texture {
   }
 
   get textureKey() {
-    return this._video.src;
+      return this._video.src || this._video.id;
   }
 
   get source() {
