@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ssh sdw@lig.net 'kill `ps aux|grep ${USER}.*${USER}.*pts/|grep -v grep|tr -s " "|cut -d " " -f2`'
