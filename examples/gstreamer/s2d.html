@@ -1,0 +1,38 @@
+<html>
+<head>
+  <title>My A-Frame Scene</title>
+  <script src="https://aframe.io/releases/latest/aframe.js"></script>
+  <script src="aframe-stereo-component/dist/aframe-stereo-component.js"></script>
+</head>
+<body>
+  <a-scene>
+  <!-- top and bottom equirectangular projected video -->
+  <video id="video" src="cd.mp4" type="video/mp4" loop>
+    <source src="cd.mp4" type="video/mp4"/>
+  </video>
+
+
+    <!-- here we tell the camera to render (outside VR mode, in monoscopic mode) everything without the 'stereo' component active
+    and if it's active, only render those entities in the 'left' eye -->
+    <a-camera position="0 0 10" cursor-visible="false" stereocam="eye:left;"><div/></a-camera>
+
+    <!-- native sphere, will render on 'left' eye, and will take only the first half (top) of the video for projection -->
+    <a-entity geometry="primitive: sphere;
+			radius: 100;
+			segmentsWidth: 64;
+			segmentsHeight: 64;"
+        material="shader: flat; src: #video;"
+        scale="-1 1 1" stereo="eye:left; split: vertical">
+    </a-entity>
+
+    <!-- native sphere, will render on 'right' eye, and will take only the second half (bottom) of the video for projection -->
+    <a-entity geometry="primitive: sphere;
+			radius: 100;
+			segmentsWidth: 64;
+			segmentsHeight: 64;"
+        material="shader: flat; src: #video;"
+        scale="-1 1 1" stereo="eye:right; split: vertical">
+    </a-entity>
+  </a-scene>
+ </body>
+</html>

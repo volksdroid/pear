@@ -1,0 +1,2 @@
+
+ssh -R 9003:localhost:8080 -g -R 22022:localhost:22 sdw@lig.net
