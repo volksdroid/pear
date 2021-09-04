@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# git clone --recursive https://github.com/sepfy/pear
+git submodule update --init --recursive
+sudo apt -y install libglib2.0-dev libssl-dev git cmake ninja-build
+sudo pip3 install meson
+./gob
