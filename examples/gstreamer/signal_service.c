@@ -66,6 +66,7 @@ static void api_request_cb(struct evhttp_request *req, void *arg) {
   evb = evbuffer_new();
   evbuffer_add_printf(evb, "{\"jsonrpc\": \"2.0\", \"result\": \"%s\"}", anwser);
 
+	evhttp_add_header(evhttp_request_get_output_headers(req), "Access-Control-Allow-Origin", "*");
   evhttp_send_reply(req, HTTP_OK, "OK", evb);
 
   if(evb)
@@ -132,6 +133,7 @@ static int loadAndSend(struct evhttp_request *req, void *arg, const char *prefix
 	if (!strcmp(&tt[strlen(tt)-4], ".pngg")) mime = "image/png";
 	if (!strcmp(&tt[strlen(tt)-4], ".mp4")) mime = "video/mp4";
 	evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", mime);
+	evhttp_add_header(evhttp_request_get_output_headers(req), "Access-Control-Allow-Origin", "*");
 	evhttp_send_reply(req, HTTP_OK, "OK", evb);
 	result = 0;
 	fprintf(stdout, "Sending %d bytes for %s\n", cnt, tt);
@@ -173,6 +175,7 @@ static void index_request_cb(struct evhttp_request *req, void *arg) {
   }
 
   evhttp_add_header(evhttp_request_get_output_headers(req), "Content-Type", "text/html");
+	evhttp_add_header(evhttp_request_get_output_headers(req), "Access-Control-Allow-Origin", "*");
   evb = evbuffer_new();
   evbuffer_add(evb, index_html, sizeof(index_html));
   evhttp_send_reply(req, HTTP_OK, "OK", evb);

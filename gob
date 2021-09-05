@@ -10,8 +10,8 @@
 if [ ! -d cmake ]; then mkdir cmake; fi
 export LDFLAGS="-Wl,--copy-dt-needed-entries"
 (cd cmake
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 cd examples
-cmake -DENABLE_EXAMPLES=on -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DENABLE_EXAMPLES=on -DCMAKE_BUILD_TYPE=Release ..
 make)
 cp cmake/examples/gstreamer/gstreamer .

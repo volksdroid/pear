@@ -4,9 +4,9 @@ project(gstreamer)
 find_package(PkgConfig)
 pkg_check_modules(GST REQUIRED gstreamer-1.0>=1.4 gstreamer-base-1.0>=1.4)
 
-set (CMAKE_C_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
-set (CMAKE_CPP_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
-set (LDFLAGS " -fsanitize=address ")
+set (CMAKE_C_FLAGS_DEBUG "-fsanitize=address -fno-omit-frame-pointer")
+set (CMAKE_CPP_FLAGS_DEBUG "-fsanitize=address -fno-omit-frame-pointer")
+set (LDFLAGS_DEBUG " -fsanitize=address ")
 
 file(GLOB SRCS "*.c")
 

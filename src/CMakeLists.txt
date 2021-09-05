@@ -4,8 +4,8 @@ project(src)
 find_package(PkgConfig)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 
-set (CMAKE_C_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
-set (CMAKE_CPP_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
+set (CMAKE_C_FLAGS_DEBUG "-fsanitize=address -fno-omit-frame-pointer")
+set (CMAKE_CPP_FLAGS_DEBUG "-fsanitize=address -fno-omit-frame-pointer")
 
 file(GLOB SRCS "*.c")
 file(GLOB TEST_SRCS "*test.c")
