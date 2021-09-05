@@ -1,6 +1,19 @@
 # Pear - WebRTC Toolkit for IoT/Embedded Device
 
-# ./gob # checks out and builds examples, copying gstreamer to root of project.
+# Quick Start
+
+Checks out and builds examples, copying gstreamer to root of project.
+```
+./goinit;./gob
+./go
+[In another terminal] ./netfd
+
+Then navigate to:
+https://f.ip.st/ - Simple video view panel, no WebXR
+https://f.ip.st/m - Mono video source, WebXR & inline
+https://f.ip.st/slr - Left/Right Stereo video source, WebXR & inline - Expected Zed Avatar vision
+https://f.ip.st/stb - Top/Bottom Stereo video source, WebXR & inline
+```
 
 # Modify this command line as desired for source, resolution, etc.
 # env PIPE_LINE='v4l2src ! videorate ! video/x-raw,width=1280,height=1024,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=6000 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1400 ! appsink name=pear-sink' ./gstreamer
