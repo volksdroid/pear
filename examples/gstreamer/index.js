@@ -223,11 +223,11 @@ function onSessionStarted(session) {
             switch(source.handedness) {
             case "left":
                 leftHandSource = source;
-                console.log(`leftHandSource`, source);
+                // console.log(`leftHandSource`, source);
                 break;
             case "right":
                 rightHandSource = source;
-                console.log(`rightHandSource`, source);
+                // console.log(`rightHandSource`, source);
                 break;
             }
         });
@@ -286,6 +286,12 @@ let ud = 0;
 let zoom = 0;
 let panStep = 0.005;
 let zoomStep = 0.05;
+let minRy = 0;
+let minRx = 0;
+let minRz = 0;
+let maxRy = 0;
+let maxRx = 0;
+let maxRz = 0;
 function onXRFrame(t, frame) {
     let session = frame.session;
     let refSpace = session.isImmersive ?
@@ -296,11 +302,15 @@ function onXRFrame(t, frame) {
 
     let pose = frame.getViewerPose(refSpace);
     if (session.isImmersive) {
+        if (rightHandSource?.gamepad?.buttons[4].pressed &&
+            rightHandSource?.gamepad?.buttons[5].pressed) {
+            lr = ud = zoom = 0;
+        }
         if (rightHandSource?.gamepad?.buttons[4].pressed) {
             amode = true;
             bmode = false;
         }
-        if (rightHandSource?.gamepad?.buttons[5].pressed) {
+            if (rightHandSource?.gamepad?.buttons[5].pressed) {
             amode = false;
             bmode = true;
         }
@@ -344,6 +354,12 @@ function onXRFrame(t, frame) {
         let pos = pose.transform.position;
         let matrix = pose.transform.matrix;
         let [x, y, z, w] = [pos.x, pos.y, pos.z, pos.w];
+        if (rot.x < minRx) minRx = rot.x;
+        if (rot.x > maxRx) maxRx = rot.x;
+        if (rot.y < minRy) minRy = rot.y;
+        if (rot.y > maxRy) maxRy = rot.y;
+        if (rot.z < minRz) minRz = rot.z;
+        if (rot.z > maxRz) maxRz = rot.z;
 	      let rx = rot.x * 2.1 + lr; // Math.PI;
 	      let ry = rot.y * 2.1 - .1 + ud; // Math.PI;
 	      let rz = rot.z * 2.1; // Math.PI;
@@ -354,7 +370,8 @@ function onXRFrame(t, frame) {
 	      let ny = Math.sin(rx+rdx);
 	      let nz = Math.cos(ry+rdy); // - Math.sin(rx+rdx);
         if (lastRY - ry > 0.01) {
-	          console.log(`rot.x: ${rot.x} ${rx}, rot.y: ${rot.y} ${ry}, rot.z: ${rot.z} ${rz}`);
+            console.log(`rot.x: ${minRx} ${maxRx}, rot.y: ${minRy} ${maxRy}, rot.z: ${minRz} ${maxRz}`);
+	          // console.log(`rot.x: ${rot.x} ${rx}, rot.y: ${rot.y} ${ry}, rot.z: ${rot.z} ${rz}`);
             // console.log(`Trans: x: ${nx} y: ${ny} z: ${nz} pos:`, pos);
         }
         lastRY = ry;
@@ -377,6 +394,16 @@ function onXRFrame(t, frame) {
     scene.updateInputSources(frame, refSpace);
     scene.drawXRFrame(frame, pose);
     scene.endFrame();
+}
+
+function telem(rot) {
+    xhttp.open('POST', '/telem');
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    let [x, y, z] = rot;
+    x = Math.round(((x-1) * 360)) || 0;
+    y = Math.round(((y-1) * 360)) || 0;
+    z = Math.round(((z-1) * 360)) || 0;
+    xhttp.send(JSON.stringify({head:{rot: {x, y, z}}}));
 }
 
 function onXRFrameOK(t, frame) {
@@ -424,6 +451,7 @@ function onXRFrameOK(t, frame) {
         */
 	      videoNode.rotation = [rot.x, rot.y, rot.z, rot.w];
 	      // quat.fromMat3(videoNode.rotation, [rot.x, rot.y, rot.z]);
+        telem(rot);
     }
     session.requestAnimationFrame(onXRFrame);
     scene.updateInputSources(frame, refSpace);

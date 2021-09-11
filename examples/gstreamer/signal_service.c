@@ -73,6 +73,58 @@ static void api_request_cb(struct evhttp_request *req, void *arg) {
     evbuffer_free(evb);
 }
 
+static void telem_request_cb(struct evhttp_request *req, void *arg) {
+
+  signal_service_t *signal_service = (signal_service_t*)arg;
+
+  struct evbuffer *evb = NULL;
+  struct evbuffer *buf = NULL;
+  cJSON *json = NULL;
+  cJSON *params = NULL;
+  char *payload = NULL;
+  char *anwser = NULL;
+  size_t len;
+
+  if(evhttp_request_get_command(req) != EVHTTP_REQ_POST) {
+    evhttp_send_error(req, HTTP_BADMETHOD, 0);
+    return;
+  }
+
+  buf = evhttp_request_get_input_buffer(req);
+
+  len = evbuffer_get_length(buf);
+  payload = (char*)malloc(len+1);
+  if(payload == NULL) {
+    evhttp_send_error(req, HTTP_INTERNAL, 0);
+    return;
+  }
+
+  payload[len] = 0;
+  evbuffer_remove(buf, payload, len);
+
+  json = cJSON_Parse(payload);
+  params = cJSON_GetObjectItemCaseSensitive(json, "params");
+  if(cJSON_IsString(params) && (params->valuestring != NULL)) {
+    if(signal_service->on_offer_get != NULL) {
+      anwser = signal_service->on_offer_get(params->valuestring, signal_service->data);
+    }
+  }
+
+  if(payload != NULL)
+    free(payload);
+
+  cJSON_Delete(json);
+
+  evb = evbuffer_new();
+  evbuffer_add_printf(evb, "{\"jsonrpc\": \"2.0\", \"result\": \"%s\"}", anwser);
+
+	evhttp_add_header(evhttp_request_get_output_headers(req), "Access-Control-Allow-Origin", "*");
+  evhttp_send_reply(req, HTTP_OK, "OK", evb);
+
+  if(evb)
+    evbuffer_free(evb);
+}
+
 static int loadAndSend(struct evhttp_request *req, void *arg, const char *prefixes[], const char *path, const char *extra) {
   struct evbuffer *evb = NULL;
   int fd = -1;
@@ -201,6 +253,7 @@ int signal_service_create(signal_service_t *signal_service, options_t options) {
   }
 
   evhttp_set_cb(signal_service->http, "/api", api_request_cb, signal_service);
+  evhttp_set_cb(signal_service->http, "/telem", telem_request_cb, signal_service);
   // evhttp_set_cb(signal_service->http, "/", index_request_cb, signal_service);
   evhttp_set_gencb(signal_service->http, path_request_cb, signal_service);
 

@@ -37,6 +37,13 @@ echo gst-launch-1.0 -vvv -e \
      ! queue ! h264parse ! filemux.video_0 \
      $ASOURCE ! queue ! $AUDIO_ENC ! filemux.audio_0
 
+gst-launch-1.0 -vvv -e \
+     mp4mux name=filemux ! $FILE_SINK\
+     $VSOURCE ! tee name=tsplit \
+     ! queue ! $VIDEO_DEC ! $VIDEO_SINK tsplit.\
+     ! queue ! h264parse ! filemux.video_0 \
+     $ASOURCE ! queue ! $AUDIO_ENC ! filemux.audio_0
+
 exit 0
 # mp4mux filemux is the multiplexer for the file that's being written
 # Video and Audio source go into the filemux
