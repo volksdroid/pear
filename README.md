@@ -8,11 +8,13 @@ Checks out and builds examples, copying gstreamer to root of project.
 ./go
 [In another terminal] ./netfd
 
+For SAM1: ip.st/fd which forwards to https://f.ip.st/slr.html
+
 Then navigate to:
 https://f.ip.st/ - Simple video view panel, no WebXR
-https://f.ip.st/m - Mono video source, WebXR & inline
-https://f.ip.st/slr - Left/Right Stereo video source, WebXR & inline - Expected Zed Avatar vision
-https://f.ip.st/stb - Top/Bottom Stereo video source, WebXR & inline
+https://f.ip.st/m.html - Mono video source, WebXR & inline
+https://f.ip.st/slr.html - Left/Right Stereo video source, WebXR & inline - Expected Zed Avatar vision
+https://f.ip.st/stb.html - Top/Bottom Stereo video source, WebXR & inline
 ```
 
 # Modify this command line as desired for source, resolution, etc.
