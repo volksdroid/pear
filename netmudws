@@ -1,0 +1,3 @@
+#!/bin/bash
+
+wscat -l 9012|(while read x; do echo Processing: $x;move $x;done)
