@@ -33,7 +33,6 @@ function updateFov() {
                 inlineVerticalFieldOfView: radValue
             });
         }
-        
         // Set the label on the page
         let label = `Vertical FOV: ${value} degrees`;
         if (value == 90) {
@@ -437,6 +436,13 @@ function onXRFrame(t, frame) {
 let ws = null;
 
 function telem(rot) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open('POST', `https://ip.st/move.cgi?port=${movePort}&pitch=${rot.move.pitch}&yaw=${rot.move.yaw}}`);
+    xhttp.setRequestHeader('Content-Type', 'application/json');
+    let pay = JSON.stringify(rot);
+    xhttp.send(pay);
+
+/*
     try {
         if (!ws) ws = new WebSocket(wsServer);
         let msg = `${rot.move.yaw} ${rot.move.pitch}`;
@@ -446,6 +452,7 @@ function telem(rot) {
         console.error(err);
         ws = null;
     }
+*/
 /*
     var xhttp = new XMLHttpRequest();
     xhttp.open('POST', '/telem');
