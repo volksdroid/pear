@@ -21,26 +21,28 @@ let fov = document.getElementById('vertFOV');
 let fovLabel = document.getElementById('vertFOVLabel');
 let radPerDegree = (Math.PI / 180);
 function updateFov() {
-    let value = parseFloat(fov.value);
-    // The inlineVerticalFieldOfView is specified in radians.
-    let radValue = value * (Math.PI / 180);
+    if (fov) {
+        let value = parseFloat(fov.value);
+        // The inlineVerticalFieldOfView is specified in radians.
+        let radValue = value * (Math.PI / 180);
 
-    if (inlineSession) {
-        // As with any values set with updateRenderState, this will take
-        // effect on the next frame.
-        inlineSession.updateRenderState({
-            inlineVerticalFieldOfView: radValue
-        });
+        if (inlineSession) {
+            // As with any values set with updateRenderState, this will take
+            // effect on the next frame.
+            inlineSession.updateRenderState({
+                inlineVerticalFieldOfView: radValue
+            });
+        }
+        
+        // Set the label on the page
+        let label = `Vertical FOV: ${value} degrees`;
+        if (value == 90) {
+            label += ' (default)';
+        }
+        fovLabel.textContent = label;
     }
-    
-    // Set the label on the page
-    let label = `Vertical FOV: ${value} degrees`;
-    if (value == 90) {
-        label += ' (default)';
-    }
-    fovLabel.textContent = label;
 }
-fov.addEventListener('change', updateFov);
+if (fov) fov.addEventListener('change', updateFov);
 
 
 let autoplayCheckbox = document.getElementById('autoplayVideo');
@@ -166,7 +168,7 @@ function initGL() {
 }
 
 function onRequestSession() {
-    let autoplay = autoplayCheckbox.checked;
+    let autoplay = autoplayCheckbox?.checked || true;
 
     let pending;
 
@@ -278,12 +280,19 @@ function fixPosition() {
 	      });
 }
 
+let lastRX = 0;
 let lastRY = 0;
+let lastRZ = 0;
+let lastHeadlr = 0;
+let lastHeadupdown = 0;
+let lastHeadtilt = 0;
 let amode = true;
 let bmode = false;
-let lr = 0;
+const lrInitial = -.10;
+let lr = lrInitial;
 let ud = 0;
-let zoom = 0;
+const zoomInitial = 1;
+let zoom = zoomInitial;
 let panStep = 0.005;
 let zoomStep = 0.05;
 let minRy = 0;
@@ -292,6 +301,7 @@ let minRz = 0;
 let maxRy = 0;
 let maxRx = 0;
 let maxRz = 0;
+let two2pi = 1/180;
 function onXRFrame(t, frame) {
     let session = frame.session;
     let refSpace = session.isImmersive ?
@@ -302,54 +312,6 @@ function onXRFrame(t, frame) {
 
     let pose = frame.getViewerPose(refSpace);
     if (session.isImmersive) {
-        if (rightHandSource?.gamepad?.buttons[4].pressed &&
-            rightHandSource?.gamepad?.buttons[5].pressed) {
-            lr = ud = zoom = 0;
-        }
-        if (rightHandSource?.gamepad?.buttons[4].pressed) {
-            amode = true;
-            bmode = false;
-        }
-            if (rightHandSource?.gamepad?.buttons[5].pressed) {
-            amode = false;
-            bmode = true;
-        }
-        if (rightHandSource?.gamepad?.axes[3] > .1) {
-            if (amode) {
-                lr += panStep;
-                console.log(`lr: ${lr}`);
-            } else {
-                zoom += zoomStep;
-                console.log(`zoom: ${zoom}`);
-            }
-        }
-        if (rightHandSource?.gamepad?.axes[3] < -.1) {
-            if (amode) {
-                lr -= panStep;
-                console.log(`lr: ${lr}`);
-            } else {
-                zoom -= zoomStep;
-                console.log(`zoom: ${zoom}`);
-            }
-        }
-        if (rightHandSource?.gamepad?.axes[2] > .1) {
-            if (amode) {
-                ud += panStep;
-            console.log(`ud: ${ud}`);
-            } else {
-                zoom += zoomStep;
-                console.log(`zoom: ${zoom}`);
-            }
-        }
-        if (rightHandSource?.gamepad?.axes[2] < -.1) {
-            if (amode) {
-                ud -= panStep;
-                console.log(`ud: ${ud}`);
-            } else {
-                zoom -= zoomStep;
-                console.log(`zoom: ${zoom}`);
-            }
-        }
         let rot = pose.transform.orientation;
         let pos = pose.transform.position;
         let matrix = pose.transform.matrix;
@@ -360,21 +322,97 @@ function onXRFrame(t, frame) {
         if (rot.y > maxRy) maxRy = rot.y;
         if (rot.z < minRz) minRz = rot.z;
         if (rot.z > maxRz) maxRz = rot.z;
-	      let rx = rot.x * 2.1 + lr; // Math.PI;
-	      let ry = rot.y * 2.1 - .1 + ud; // Math.PI;
-	      let rz = rot.z * 2.1; // Math.PI;
+        let pc = 2.1; // 2.1; // Math.PI/2;
+	      let rx = rot.x * pc + lr;
+	      let ry = rot.y * pc - .1 + ud;
+	      let rz = rot.z * pc;
 	      let [vx, vy, vz] = [4-zoom, 4-zoom, -4+zoom];
         let [dx, dy, dz] = [0, -0, 0];
         let [rdx, rdy, rdz] = [0, 0, 0];
 	      let nx = Math.sin(-(ry+rdy));
 	      let ny = Math.sin(rx+rdx);
 	      let nz = Math.cos(ry+rdy); // - Math.sin(rx+rdx);
-        if (lastRY - ry > 0.01) {
-            console.log(`rot.x: ${minRx} ${maxRx}, rot.y: ${minRy} ${maxRy}, rot.z: ${minRz} ${maxRz}`);
+        const xdiff = Math.abs(Math.abs(lastRX) - Math.abs(-rot.x*180));
+        const ydiff = Math.abs(Math.abs(lastRY) - Math.abs(-rot.y*180));
+        const zdiff = Math.abs(Math.abs(lastRZ) - Math.abs(-rot.z*180));
+        let headlr = Math.round(-rot.y*180);
+        let headupdown = Math.round(rot.x*180);
+        let headtilt = Math.round(rot.z*180);
+        if (headlr != lastHeadlr || headupdown != lastHeadupdown || headtilt != lastHeadtilt) {
+            lastHeadlr = headlr;
+            lastHeadupdown = headupdown;
+            lastHeadtilt = headtilt;
+	          console.log(`Head Left/Right: ${headlr} Up/Down: ${headupdown} Tilt: ${headtilt}`);
+            // console.log(`rot.x: ${minRx} ${maxRx}, rot.y: ${minRy} ${maxRy}, rot.z: ${minRz} ${maxRz}`);
 	          // console.log(`rot.x: ${rot.x} ${rx}, rot.y: ${rot.y} ${ry}, rot.z: ${rot.z} ${rz}`);
             // console.log(`Trans: x: ${nx} y: ${ny} z: ${nz} pos:`, pos);
+            let bpressed = [];
+            rightHandSource?.gamepad?.buttons.forEach((b, idx)=> {
+                if (b.pressed) bpressed.push(idx);
+            });
+            console.log(`Buttons pressed: `, bpressed);
+            if (rightHandSource?.gamepad?.buttons[1].pressed) {
+                // console.log(rightHandSource?.gamepad?.axes);
+                if (rightHandSource?.gamepad?.buttons[3].touched) {
+                    telem({'move':{'yaw': Math.round(rightHandSource?.gamepad?.axes[3] * 180),
+                                       'pitch': Math.round(rightHandSource?.gamepad?.axes[4] * 180),
+                                       'twist': headtilt}});
+                } else {
+                    telem({'move':{'yaw': headlr, 'pitch': headupdown, 'twist': headtilt}});
+                }
+            } else {
+                if (rightHandSource?.gamepad?.buttons[4].pressed &&
+                    rightHandSource?.gamepad?.buttons[5].pressed) {
+                    lr = ud = zoom = 0;
+                    lr = lrInitial;
+                    zoom = zoomInitial;
+                }
+                if (rightHandSource?.gamepad?.buttons[4].pressed) {
+                    amode = true;
+                    bmode = false;
+                }
+                if (rightHandSource?.gamepad?.buttons[5].pressed) {
+                    amode = false;
+                    bmode = true;
+                }
+                if (rightHandSource?.gamepad?.axes[3] < -.2) {
+                    if (amode) {
+                        lr += panStep;
+                        console.log(`lr: ${lr}`);
+                    } else {
+                        zoom += zoomStep;
+                        console.log(`zoom: ${zoom}`);
+                    }
+                }
+                if (rightHandSource?.gamepad?.axes[3] > .2) {
+                    if (amode) {
+                        lr -= panStep;
+                        console.log(`lr: ${lr}`);
+                    } else {
+                        zoom -= zoomStep;
+                        console.log(`zoom: ${zoom}`);
+                    }
+                }
+                if (rightHandSource?.gamepad?.axes[2] < -.2) {
+                    if (amode) {
+                        ud += panStep;
+                        console.log(`ud: ${ud}`);
+                    } else {
+                        zoom += zoomStep;
+                        console.log(`zoom: ${zoom}`);
+                    }
+                }
+                if (rightHandSource?.gamepad?.axes[2] > .2) {
+                    if (amode) {
+                        ud -= panStep;
+                        console.log(`ud: ${ud}`);
+                    } else {
+                        zoom -= zoomStep;
+                        console.log(`zoom: ${zoom}`);
+                    }
+                }
+            }
         }
-        lastRY = ry;
 	      // let ny = vy * Math.cos(rx) - vz * Math.sin(rx);
 	      // nz = vy * Math.sin(rx) - vz * Math.sin(rx);
         videoNode.origin = pos;
@@ -396,17 +434,32 @@ function onXRFrame(t, frame) {
     scene.endFrame();
 }
 
+let ws = null;
+
 function telem(rot) {
+    try {
+        if (!ws) ws = new WebSocket(wsServer);
+        let msg = `${rot.move.yaw} ${rot.move.pitch}`;
+        console.log(`Requesting move: ${msg}`);
+        ws.send(msg);
+    } catch (err) {
+        console.error(err);
+        ws = null;
+    }
+/*
+    var xhttp = new XMLHttpRequest();
     xhttp.open('POST', '/telem');
     xhttp.setRequestHeader('Content-Type', 'application/json');
-    let [x, y, z] = rot;
-    x = Math.round(((x-1) * 360)) || 0;
-    y = Math.round(((y-1) * 360)) || 0;
-    z = Math.round(((z-1) * 360)) || 0;
-    xhttp.send(JSON.stringify({head:{rot: {x, y, z}}}));
+    // let [x, y, z] = rot;
+    // x = Math.round(((x-1) * 360)) || 0;
+    // y = Math.round(((y-1) * 360)) || 0;
+    // z = Math.round(((z-1) * 360)) || 0;
+    let pay = JSON.stringify(rot);
+    xhttp.send(pay);
+*/
 }
 
-function onXRFrameOK(t, frame) {
+function onXRFrameOKOld(t, frame) {
     let session = frame.session;
     let refSpace = session.isImmersive ?
         xrImmersiveRefSpace :
@@ -451,7 +504,6 @@ function onXRFrameOK(t, frame) {
         */
 	      videoNode.rotation = [rot.x, rot.y, rot.z, rot.w];
 	      // quat.fromMat3(videoNode.rotation, [rot.x, rot.y, rot.z]);
-        telem(rot);
     }
     session.requestAnimationFrame(onXRFrame);
     scene.updateInputSources(frame, refSpace);

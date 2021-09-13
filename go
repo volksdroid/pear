@@ -13,6 +13,12 @@
 # GST_DEBUG="GST_TRACER:7" GST_TRACERS="interlatency" \
     # Maybe causes lockup:    # b-adapt=true rc-lookahead=1
 
+
+env PIPE_LINE='v4l2src ! videorate ! video/x-raw,width=1280,height=720,framerate=30/1 ! videoconvert ! queue ! x264enc bitrate=3000 speed-preset=ultrafast tune=zerolatency key-int-max=30 ! video/x-h264,profile=constrained-baseline ! queue ! h264parse ! queue ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1500 ! appsink name=pear-sink' ./gstreamer
+
+exit 0
+
+# Best low latency, still locks up
 env \
     GST_DEBUG=*:3 \
     PIPE_LINE='v4l2src num-buffers=4000 ! videorate ! video/x-raw,width=1280,height=720,framerate=30/1 ! queue ! videoconvert ! queue ! x264enc bitrate=3000 b-adapt=true rc-lookahead=6 speed-preset=ultrafast tune=zerolatency key-int-max=20 pass=quant ! queue ! video/x-h264,profile=constrained-baseline ! queue !h264parse ! rtph264pay config-interval=-1 pt=102 seqnum-offset=0 timestamp-offset=0 mtu=1500 ! queue ! appsink name=pear-sink' \

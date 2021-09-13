@@ -30,7 +30,9 @@ const char index_html[] = "\
       } \n\
       let pc = new RTCPeerConnection({ \n\
         rtcpMuxPolicy: 'require', bundlePolicy: 'max-bundle', \n\
-        iceServers: [{urls: 'stun:w5.lig.net:3478'}] \n\
+        iceServers: [{urls: 'stun:w5.lig.net:3478'}, {urls: 'stun:f.ip.st:3478'}, {urls: 'turn:w5.lig.net:3478', username: 'forged', credential: 'droids'}, {urls: 'turn:f.ip.st:3478', username: 'forged', credential: 'droids'}] \n\
+      // iceServers: [{urls: 'stun:lig.net:3478'}] \n\
+      // iceServers: [{urls: 'stun:w5.lig.net:3478'}] \n\
       }); \n\
       let log = msg => { \n\
         console.log(msg); \n\

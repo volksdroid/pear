@@ -22,9 +22,7 @@
 #include "signal_service.h"
 
 static void api_request_cb(struct evhttp_request *req, void *arg) {
-
   signal_service_t *signal_service = (signal_service_t*)arg;
-
   struct evbuffer *evb = NULL;
   struct evbuffer *buf = NULL;
   cJSON *json = NULL;
@@ -35,6 +33,7 @@ static void api_request_cb(struct evhttp_request *req, void *arg) {
 
   if(evhttp_request_get_command(req) != EVHTTP_REQ_POST) {
     evhttp_send_error(req, HTTP_BADMETHOD, 0);
+    // evhttp_request_free(req);
     return;
   }
 
@@ -42,8 +41,9 @@ static void api_request_cb(struct evhttp_request *req, void *arg) {
 
   len = evbuffer_get_length(buf);
   payload = (char*)malloc(len+1);
-  if(payload == NULL) {
+  if (payload == NULL) {
     evhttp_send_error(req, HTTP_INTERNAL, 0);
+    // evhttp_request_free(req);
     return;
   }
 
@@ -69,12 +69,11 @@ static void api_request_cb(struct evhttp_request *req, void *arg) {
 	evhttp_add_header(evhttp_request_get_output_headers(req), "Access-Control-Allow-Origin", "*");
   evhttp_send_reply(req, HTTP_OK, "OK", evb);
 
-  if(evb)
+  if (evb)
     evbuffer_free(evb);
 }
 
 static void telem_request_cb(struct evhttp_request *req, void *arg) {
-
   signal_service_t *signal_service = (signal_service_t*)arg;
 
   struct evbuffer *evb = NULL;
@@ -85,8 +84,9 @@ static void telem_request_cb(struct evhttp_request *req, void *arg) {
   char *anwser = NULL;
   size_t len;
 
-  if(evhttp_request_get_command(req) != EVHTTP_REQ_POST) {
+  if (evhttp_request_get_command(req) != EVHTTP_REQ_POST) {
     evhttp_send_error(req, HTTP_BADMETHOD, 0);
+    // evhttp_request_free(req);
     return;
   }
 
@@ -94,35 +94,39 @@ static void telem_request_cb(struct evhttp_request *req, void *arg) {
 
   len = evbuffer_get_length(buf);
   payload = (char*)malloc(len+1);
-  if(payload == NULL) {
+  if (payload == NULL) {
     evhttp_send_error(req, HTTP_INTERNAL, 0);
+    // evhttp_request_free(req);
     return;
   }
 
   payload[len] = 0;
   evbuffer_remove(buf, payload, len);
 
+  printf("telem payload: %s\n", payload);
   json = cJSON_Parse(payload);
-  params = cJSON_GetObjectItemCaseSensitive(json, "params");
-  if(cJSON_IsString(params) && (params->valuestring != NULL)) {
-    if(signal_service->on_offer_get != NULL) {
-      anwser = signal_service->on_offer_get(params->valuestring, signal_service->data);
-    }
+  params = cJSON_GetObjectItemCaseSensitive(json, "move");
+  if (cJSON_IsObject(params)) {
+    cJSON *yaws = cJSON_GetObjectItemCaseSensitive(params, "yaw");
+    cJSON *pitchs = cJSON_GetObjectItemCaseSensitive(params, "pitch");
+    // cJSON *twists = cJSON_GetObjectItemCaseSensitive(json, "yaw");
+    int yaw = 0, pitch = 0;
+    if (cJSON_IsNumber(yaws)) yaw = yaws->valueint;
+    if (cJSON_IsNumber(pitchs)) pitch = pitchs->valueint;
+    printf("telem move: yaw: %d pitch: %d\n", yaw, pitch);
   }
 
-  if(payload != NULL)
+  if (payload != NULL)
     free(payload);
 
   cJSON_Delete(json);
 
-  evb = evbuffer_new();
-  evbuffer_add_printf(evb, "{\"jsonrpc\": \"2.0\", \"result\": \"%s\"}", anwser);
+  // evb = evbuffer_new();
+  // evbuffer_add_printf(evb, "{\"jsonrpc\": \"2.0\", \"result\": \"%s\"}", anwser);
 
-	evhttp_add_header(evhttp_request_get_output_headers(req), "Access-Control-Allow-Origin", "*");
-  evhttp_send_reply(req, HTTP_OK, "OK", evb);
-
-  if(evb)
+  if (evb)
     evbuffer_free(evb);
+  // evhttp_request_free(req);
 }
 
 static int loadAndSend(struct evhttp_request *req, void *arg, const char *prefixes[], const char *path, const char *extra) {

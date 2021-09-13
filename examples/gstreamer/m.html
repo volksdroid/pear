@@ -38,15 +38,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         <p>
           Immersively view your avatar stereo video feed.
           <hr/>
-          Autoplay when VR starts: <input id='autoplayVideo' type='checkbox' checked/>
+          <!-- Autoplay when VR starts: <input id='autoplayVideo' type='checkbox' checked/> -->
         </p>
-          <p>
+ <!--         <p>
             <input id='vertFOV' value='90' min='30' max='150' step='10' type='range'/><br/>
             <label id='vertFOVLabel' for="vertFOV">Vertical FOV: </label>
-          </p>
+          </p> -->
+        When video feed appears, click to enter.
       </details>
     </header>
-    <script>displayMode = 'mono'; </script>
+      <div id="overlay">
+        test
+      </div>
+    <script>displayMode = 'mono'; wsServer = 'wss://mud.net/ws'; </script>
     <script type="module" src="index.js"></script>
     </script>
   </body>

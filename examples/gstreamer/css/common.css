@@ -79,3 +79,22 @@ canvas {
   color: rgb(80, 168, 252);
   background-color: rgba(255, 255, 255, 0.7);
 }
+/* By default, hide the DOM Overlay element. */
+#overlay {
+    display: none;
+}
+/* Show the DOM Overlay element while active */
+/* The overlay element has the :xr-overlay pseudoclass while active, 
+      and we use this in CSS rules to show/hide UI. */
+#overlay:xr-overlay {
+    display: initial;
+    position: absolute;
+    top: 300px;
+    left:300px;
+    width: 300px;
+    height: 200px;
+    background: #20202020;
+    z-index: 1;
+    font-size: 18px;
+    color: rgb(80, 168, 252);
+}
